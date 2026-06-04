@@ -1,0 +1,34 @@
+---
+title: OOB 파일 동기화 — 업로드 한 번이 세 지역 러너까지 자동 확산
+config:
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '15px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#64748B'
+    actorBkg: '#EEF2FF'
+    actorBorder: '#6366F1'
+    actorTextColor: '#1E293B'
+    noteBkgColor: '#FFFBEB'
+    noteBorderColor: '#F59E0B'
+    noteTextColor: '#1E293B'
+---
+sequenceDiagram
+    autonumber
+    participant N as Nexus (주 데이터센터)
+    participant J as Jenkins 마스터
+    participant A as Ansible 동기화 작업
+    participant S as 지역 대표 러너(seed)
+    participant P as 같은 지역 peer 러너
+
+    N->>J: 업로드 Webhook (action, repo, component)
+    J->>J: HMAC 서명 검증 (진짜 Nexus 신호인지)
+    J->>A: realtime_sync 실행
+    A->>N: 파일 download
+    A->>A: 크기와 체크섬(sha256) 검증
+    A->>S: 지역 대표 러너 1대로 전송 (전용선 1회만)
+    S->>P: rsync로 같은 지역 안에서 확산
+    Note over J,P: 주기 reconcile(30분과 하루)와 heartbeat(15분)가<br/>실시간이 놓친 누락을 자동 보정

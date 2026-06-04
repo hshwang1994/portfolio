@@ -1,0 +1,36 @@
+---
+title: 인프라 자동화 플랫폼 — 클릭 한 번으로 서버 작업과 점검을 자동화
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '17px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#94A3B8'
+    tertiaryColor: '#F8FAFC'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    PORTAL@{ icon: "fa6-solid:window-maximize", label: "사내 포털 (클릭 한 번)" }
+    RUN@{ icon: "logos:ansible", label: "① 자동 실행 (Ansible)" }
+    GATHER["② 정보 수집<br/>장비 상태를 자동 점검"]:::ok
+    TARGET@{ icon: "fa6-solid:server", label: "대상 서버와 장비" }
+    BASE["폐쇄망 자동화 기반<br/>세 레이어를 떠받침"]:::gate
+
+    PORTAL -->|"요청"| RUN
+    RUN -->|"작업 수행"| TARGET
+    GATHER -->|"상태 점검"| TARGET
+    GATHER -.->|"최신 자산 정보 반영"| PORTAL
+    RUN -.->|"이 기반 위에서 동작"| BASE
+    GATHER -.->|"이 기반 위에서 동작"| BASE
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

@@ -1,0 +1,44 @@
+---
+title: 본 점검 전 4단계 사전 점검 — 막히면 어느 단계인지?
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '16px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#64748B'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    START(["IP 하나 + 대상 종류 (Linux · Windows · ESXi · Redfish (BMC))"]):::start
+
+    S1{"① PING — 대상까지 네트워크가 닿나?"}:::gate
+    S2{"② PORT — 점검 채널 포트가 열렸나? (SSH 22 · WinRM · vSphere · Redfish BMC)"}:::gate
+    S3{"③ PROTOCOL — 프로토콜 핸드셰이크 응답이 정상인가?"}:::gate
+    VAULT@{ icon: "logos:vault-icon", label: "제조사 · 모델별 자격증명을 Vault 에서 조회" }
+    S4{"④ AUTH — 조회한 자격증명으로 로그인되나?"}:::gate
+
+    GATHER(["본 점검 진입 — Ansible 실행 · 정보 수집"]):::ok
+    FAIL(["막힘 — 실패한 단계(PING/PORT/PROTOCOL/AUTH)와 위치를 표준 결과에 기록"]):::stop
+
+    START --> S1
+    S1 -- "예" --> S2
+    S2 -- "예" --> S3
+    S3 -- "예" --> VAULT --> S4
+    S4 -- "예" --> GATHER
+
+    S1 -- "아니오 (네트워크 단절)" --> FAIL
+    S2 -- "아니오 (방화벽 · 포트 차단)" --> FAIL
+    S3 -- "아니오 (프로토콜 불일치)" --> FAIL
+    S4 -- "아니오 (자격증명 실패)" --> FAIL
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

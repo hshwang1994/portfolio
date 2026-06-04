@@ -1,0 +1,48 @@
+---
+title: 제조사 · 모델 · 펌웨어 점수로 가장 맞는 Adapter 자동 선택
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '16px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#64748B'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    START(["IP 하나로 대상 서버 접속 — Linux · Windows · ESXi · Redfish (BMC)"]):::start
+
+    DETECT["장비 식별 정보 감지 — 제조사 · 모델 · 펌웨어 버전"]:::act
+    VAULT@{ icon: "logos:vault-icon", label: "Vault — 제조사별 자격증명" }
+    CHANNEL["점검 채널 결정 — Windows=WinRM · Linux=SSH (22) · ESXi=vSphere · Redfish=BMC(HTTPS 443)"]:::act
+
+    CANDIDATES["등록된 Adapter 후보 나열"]:::act
+    SCORE["후보마다 점수 계산 — 제조사 일치 · 모델 일치 · 펌웨어 범위 일치"]:::act
+    PICK{"가장 높은 점수의 후보가 있는가?"}:::gate
+
+    BEST(["딱 맞는 Adapter 선택"]):::ok
+    FALLBACK(["기본 Adapter로 fallback"]):::stop
+
+    RUN["선택된 Adapter로 Ansible 점검 · 정보 수집 실행"]:::act
+    TEST@{ icon: "logos:python", label: "Python / pytest — baseline 회귀 검증" }
+    DONE(["장비 정보 수집 완료"]):::ok
+
+    START --> DETECT
+    VAULT -. "제조사별 인증" .-> START
+    DETECT --> CHANNEL --> CANDIDATES --> SCORE --> PICK
+    PICK -- "후보 있음 (최고 점수)" --> BEST
+    PICK -- "임계 미만 · 후보 없음" --> FALLBACK
+    BEST --> RUN
+    FALLBACK --> RUN
+    RUN --> TEST --> DONE
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

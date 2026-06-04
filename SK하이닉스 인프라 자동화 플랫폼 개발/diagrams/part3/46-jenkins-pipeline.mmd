@@ -1,0 +1,40 @@
+---
+title: 단계별 자동 점검, 한 단계라도 실패하면 배포 차단
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '17px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#94A3B8'
+    tertiaryColor: '#F8FAFC'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    START@{ icon: "logos:jenkins", label: "Jenkins 파이프라인 시작" }
+    S1{"① 입력 형식 검증"}:::gate
+    S2["② 점검 실행"]:::act
+    S3{"③ 형식 정합 검증"}:::gate
+    S4{"④ 회귀 점검"}:::gate
+    OK(["통과 → 결과 출력"]):::ok
+    BLOCK(["실패 → 배포 중단<br/>수정 후 재시도"]):::stop
+
+    START --> S1
+    S1 -- "통과" --> S2 --> S3
+    S3 -- "정합" --> S4
+    S4 -- "통과" --> OK
+    S1 -- "실패" --> BLOCK
+    S3 -- "위반" --> BLOCK
+    S4 -- "실패" --> BLOCK
+    BLOCK -.-> START
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

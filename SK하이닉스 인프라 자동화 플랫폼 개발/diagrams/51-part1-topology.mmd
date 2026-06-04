@@ -1,0 +1,60 @@
+---
+title: 전체 시스템 구조
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '15px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#64748B'
+    edgeLabelBackground: '#FFFFFF'
+    clusterBkg: '#F8FAFC'
+    clusterBorder: '#CBD5E1'
+---
+flowchart TB
+    PORTAL["<b>포털</b><br/>작업 선택 → 대상 서버 입력 → Jenkins Job 트리거"]:::portal
+    GITLAB["<b>GitLab</b> · 코드 저장소"]:::ext
+
+    subgraph DEV["개발 (운영과 완전 격리)"]
+      direction TB
+      DM["<b>개발 Jenkins 마스터</b><br/>Job 스케줄링 · 파라미터 전달 · Redis"]:::master
+      DA1["<b>지역 A</b> 러너"]:::agent
+      DA2["<b>지역 B</b> 러너"]:::agent
+      DA3["<b>지역 C</b> 러너"]:::agent
+      DM -->|"SSH (22)"| DA1
+      DM -->|"SSH (22)"| DA2
+      DM -->|"SSH (22)"| DA3
+    end
+
+    subgraph PRD["운영 (개발과 완전 격리)"]
+      direction TB
+      PM["<b>운영 Jenkins 마스터</b><br/>Job 스케줄링 · 파라미터 전달 · Redis"]:::master
+      PA1["<b>지역 A</b> 러너"]:::agent
+      PA2["<b>지역 B</b> 러너"]:::agent
+      PA3["<b>지역 C</b> 러너"]:::agent
+      PM -->|"SSH (22)"| PA1
+      PM -->|"SSH (22)"| PA2
+      PM -->|"SSH (22)"| PA3
+    end
+
+    TARGET["<b>대상 서버</b><br/>Linux · Windows · ESXi · Redfish (BMC)"]:::target
+
+    PORTAL -->|"HTTPS (443)"| DM
+    PORTAL -->|"HTTPS (443)"| PM
+    PM -->|"HTTPS (443) checkout"| GITLAB
+    DA1 -->|"SSH / WinRM / HTTPS"| TARGET
+    DA2 --> TARGET
+    DA3 --> TARGET
+    PA1 -->|"SSH / WinRM / HTTPS"| TARGET
+    PA2 --> TARGET
+    PA3 --> TARGET
+
+    classDef portal fill:#DBEAFE,stroke:#3B82F6,color:#1E293B,stroke-width:1.5px
+    classDef master fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px
+    classDef agent fill:#F8FAFC,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
+    classDef ext fill:#FEF9C3,stroke:#CA8A04,color:#1E293B,stroke-width:1.5px
+    classDef target fill:#DCFCE7,stroke:#16A34A,color:#1E293B,stroke-width:1.5px

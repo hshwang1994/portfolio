@@ -1,0 +1,33 @@
+---
+title: 여러 점검 조각을 합쳐 표준 형식으로 (일부 실패는 격리)
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '17px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#94A3B8'
+    tertiaryColor: '#F8FAFC'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    G(["CPU, 메모리, 디스크, 네트워크<br/>항목별 점검"]):::start
+    MERGE["조각들을 하나로 합침"]:::act
+    BUILD["표준 형식으로 정리"]:::act
+    ENV(["표준 결과 (정해진 형식)"]):::ok
+    FAILB["일부 실패는 그 항목만<br/>'실패'로 표시"]:::stop
+
+    G --> MERGE --> BUILD --> ENV
+    BUILD -.->|"실패 격리"| FAILB
+    FAILB --> ENV
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

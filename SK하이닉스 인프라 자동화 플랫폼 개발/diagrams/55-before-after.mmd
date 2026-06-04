@@ -1,0 +1,31 @@
+---
+title: 도입 전(AS-IS) → 도입 후(TO-BE)
+config:
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '15px'
+    primaryTextColor: '#1E293B'
+    lineColor: '#64748B'
+    clusterBkg: '#F8FAFC'
+    clusterBorder: '#CBD5E1'
+---
+flowchart LR
+    subgraph BEFORE["AS-IS · 도입 전"]
+      direction TB
+      B1["서버를 한 대씩 손으로 준비하고 점검<br/>한 대 5~30분(현장 추정)"]:::bad
+      B2["무료 오픈소스, 자체 고가용성 없음"]:::bad
+      B3["단일 망 — 사고 반경이 큼"]:::bad
+      B4["점검 결과 형식이 제각각<br/>포털이 그대로 받기 어려움"]:::bad
+    end
+    subgraph AFTER["TO-BE · 도입 후"]
+      direction TB
+      A1["포털 클릭 한 번이 자동 점검과 운영으로"]:::good
+      A2["인프라 레벨 고가용성<br/>VMware FT, NFS active-passive"]:::good
+      A3["개발/운영 + 서비스/OOB 3중 망 분리"]:::good
+      A4["IP 하나로 3채널 점검<br/>13필드 표준 JSON"]:::good
+    end
+    BEFORE ==>|"폐쇄망 자동화 플랫폼 구축"| AFTER
+
+    classDef bad  color:#000,fill:#fdd,stroke:#c33,stroke-width:2px
+    classDef good color:#000,fill:#dfd,stroke:#3c3,stroke-width:2px

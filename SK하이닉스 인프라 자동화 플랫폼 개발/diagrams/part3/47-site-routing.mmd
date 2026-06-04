@@ -1,0 +1,41 @@
+---
+title: loc 값으로 지역(A·B·C) 러너 골라 점검?
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '16px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#64748B'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    PORTAL@{ icon: "fa6-solid:window-maximize", label: "포털 (점검 요청 + loc 값)" }
+    MASTER@{ icon: "logos:jenkins", label: "운영 Jenkins 마스터" }
+    ROUTE{"loc 값이 어느 지역?"}:::gate
+    RA["러너 · 지역 A"]:::act
+    RB["러너 · 지역 B"]:::act
+    RC["러너 · 지역 C"]:::act
+    TARGET@{ icon: "fa6-solid:server", label: "대상 서버 (Linux / Windows / ESXi / Redfish BMC)" }
+    NOTE["점검 로직은 사이트를 모름 — 위치 라우팅과 점검 로직 분리"]:::ext
+
+    PORTAL -->|"HTTPS (443)"| MASTER
+    MASTER -->|"loc 값으로 라우팅"| ROUTE
+    ROUTE -->|"loc = A · SSH (22)"| RA
+    ROUTE -->|"loc = B · SSH (22)"| RB
+    ROUTE -->|"loc = C · SSH (22)"| RC
+    RA -->|"SSH / WinRM / HTTPS"| TARGET
+    RB --> TARGET
+    RC --> TARGET
+    ROUTE -.-> NOTE
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

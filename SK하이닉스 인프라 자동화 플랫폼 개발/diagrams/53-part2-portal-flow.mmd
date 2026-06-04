@@ -1,0 +1,36 @@
+---
+title: 포털 입력 → 알맞은 서버가 자동 작업 → 결과 표시
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '17px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#94A3B8'
+    tertiaryColor: '#F8FAFC'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    PORTAL@{ icon: "fa6-solid:window-maximize", label: "포털에서 작업 입력" }
+    ROUTE{"개발 / 운영 구분"}:::gate
+    INV["작업 대상 목록 자동 생성"]:::act
+    PICK["현장 위치에 맞는 서버 선택"]:::act
+    RUN@{ icon: "logos:ansible", label: "서버 자동 설정 (Ansible)" }
+    TGT@{ icon: "fa6-solid:server", label: "대상 서버" }
+    OK(["결과 → 포털 표시"]):::ok
+
+    PORTAL --> ROUTE
+    ROUTE -- "개발" --> INV
+    ROUTE -- "운영" --> INV
+    INV --> PICK --> RUN --> TGT --> OK
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

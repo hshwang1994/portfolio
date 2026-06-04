@@ -1,0 +1,25 @@
+---
+title: 포털·운영자 → 빌드 서버 → 점검 자동화 → 대상 인프라
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '16px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#94A3B8'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    OP@{ icon: "fa6-solid:user", label: "운영자 또는 포털" }
+    BUILD@{ icon: "logos:jenkins", label: "빌드 서버" }
+    AUTO@{ icon: "logos:ansible", label: "점검 자동화" }
+    VAULT@{ icon: "logos:vault-icon", label: "자격증명 금고" }
+    INFRA@{ icon: "fa6-solid:server", label: "대상 인프라 (운영체제, 가상화, 하드웨어)" }
+
+    OP --> BUILD --> AUTO
+    AUTO -->|"비밀번호 꺼냄"| VAULT
+    AUTO -->|"점검"| INFRA
