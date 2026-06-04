@@ -1,8 +1,6 @@
 ---
 title: 본 점검 전 4단계 사전 점검으로 막힌 단계를 표준 결과에 기록
 config:
-  layout: elk
-  look: neo
   theme: base
   themeVariables:
     fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
@@ -12,18 +10,20 @@ config:
     edgeLabelBackground: '#FFFFFF'
     clusterBkg: '#F8FAFC'
     clusterBorder: '#CBD5E1'
+  flowchart:
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 8
 ---
-flowchart TD
-    START(["IP 하나, 대상 종류<br/>Linux, Windows, ESXi, Redfish (BMC)"]):::input
-
+flowchart LR
+    START(["IP 하나, 대상 종류<br/>Linux·Windows·ESXi·Redfish"]):::input
     S1{"① PING<br/>네트워크가 닿나?"}:::warn
-    S2{"② PORT<br/>채널 포트가 열렸나?<br/>SSH 22, WinRM, vSphere, BMC"}:::warn
-    S3{"③ PROTOCOL<br/>핸드셰이크 응답 정상인가?"}:::warn
-    VAULT@{ icon: "logos:vault-icon", label: "제조사, 모델별 자격증명을 Vault 에서 조회" }
-    S4{"④ AUTH<br/>자격증명으로 로그인되나?"}:::warn
-
-    GATHER(["본 점검 진입<br/>Ansible 실행, 정보 수집"]):::ok
-    FAIL(["막힘, 실패 단계와 위치를<br/>표준 결과에 기록"]):::fail
+    S2{"② PORT<br/>포트가 열렸나?"}:::warn
+    S3{"③ PROTOCOL<br/>핸드셰이크 정상?"}:::warn
+    VAULT["제조사별 자격증명<br/>Vault 조회"]:::proc
+    S4{"④ AUTH<br/>로그인되나?"}:::warn
+    GATHER(["본 점검 진입<br/>Ansible 수집"]):::ok
+    FAIL(["막힌 단계·위치를<br/>표준 결과에 기록"]):::fail
 
     START --> S1
     S1 -- "예" --> S2
@@ -31,21 +31,20 @@ flowchart TD
     S3 -- "예" --> VAULT --> S4
     S4 -- "예" --> GATHER
 
-    S1 -- "아니오 (네트워크 단절)" --> FAIL
-    S2 -- "아니오 (방화벽, 포트 차단)" --> FAIL
-    S3 -- "아니오 (프로토콜 불일치)" --> FAIL
-    S4 -- "아니오 (자격증명 실패)" --> FAIL
-
-    VAULT:::proc
+    S1 -. "아니오 · 네트워크 단절" .-> FAIL
+    S2 -. "아니오 · 포트 차단" .-> FAIL
+    S3 -. "아니오 · 프로토콜 불일치" .-> FAIL
+    S4 -. "아니오 · 자격증명 실패" .-> FAIL
 
     subgraph LEGEND["범례"]
       direction LR
       LG_A["입력"]:::input
       LG_B["처리"]:::proc
-      LG_C["통과, 출력"]:::ok
-      LG_D["주의, 분기"]:::warn
-      LG_E["실패, 차단"]:::fail
+      LG_C["통과·출력"]:::ok
+      LG_D["분기·점검"]:::warn
+      LG_E["실패·차단"]:::fail
     end
+    FAIL ~~~ LEGEND
 
     classDef input fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
     classDef proc  fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px

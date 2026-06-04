@@ -1,8 +1,6 @@
 ---
 title: 정보 개더링 전체 아키텍처 — IP 하나로 멀티벤더 서버 표준 수집
 config:
-  layout: elk
-  look: neo
   theme: base
   themeVariables:
     fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
@@ -12,68 +10,64 @@ config:
     edgeLabelBackground: '#FFFFFF'
     clusterBkg: '#F8FAFC'
     clusterBorder: '#CBD5E1'
+  flowchart:
+    nodeSpacing: 38
+    rankSpacing: 60
+    padding: 10
 ---
-flowchart TB
+flowchart LR
   subgraph IN["입력"]
-    direction LR
-    PORTAL@{ icon: "fa6-solid:window-maximize", label: "사내 클라우드 포털<br/>IP 1개 + 대상 종류" }
-    PARAM@{ icon: "fa6-solid:network-wired", label: "Job 파라미터<br/>loc(A/B/C), target_type" }
+    direction TB
+    PORTAL["사내 클라우드 포털<br/>IP 1개 + 대상 종류"]:::input
+    PARAM["Job 파라미터<br/>loc(A/B/C), target_type"]:::input
     PORTAL --> PARAM
   end
 
-  subgraph ORCH["오케스트레이션 — Jenkins 4-Stage"]
-    direction LR
-    ST1["① Validate<br/>입력 검증"]
-    ST2["② Gather<br/>채널 실행"]
-    ST3["③ Validate Schema<br/>field_dictionary 정합"]
-    ST4["④ E2E 회귀 / Callback"]
+  subgraph ORCH["Jenkins 4-Stage"]
+    direction TB
+    ST1["① Validate · 입력 검증"]:::proc
+    ST2["② Gather · 채널 실행"]:::proc
+    ST3["③ Validate Schema · 정합"]:::proc
+    ST4["④ E2E 회귀 / Callback"]:::proc
     ST1 --> ST2 --> ST3 --> ST4
   end
 
-  subgraph PRE["사전진단 precheck (순차 차단)"]
-    direction LR
-    PP1["1 ping"] --> PP2["2 port"] --> PP3["3 protocol"] --> PP4["4 auth"]
-    PFAIL["실패 단계 기록<br/>diagnosis.failure_stage"]:::fail
-  end
-
-  subgraph CH["점검 채널 3개 (본체는 제조사 모름)"]
-    direction LR
-    OSG@{ icon: "logos:ansible", label: "os-gather<br/>SSH, WinRM" }
-    ESXG@{ icon: "logos:ansible", label: "esxi-gather<br/>vSphere" }
-    RFG@{ icon: "fa6-solid:microchip", label: "redfish-gather<br/>Redfish (stdlib만)" }
+  subgraph CH["점검 — 사전진단 후 3채널 (본체는 제조사 모름)"]
+    direction TB
+    PRE["사전진단 4단계<br/>ping→port→protocol→auth"]:::gate
+    OSG["os-gather · SSH · WinRM"]:::proc
+    ESXG["esxi-gather · vSphere"]:::proc
+    RFG["redfish-gather · Redfish"]:::proc
+    PRE --> OSG
+    PRE --> ESXG
+    PRE --> RFG
+    PRE -.->|"차단 시"| PFAIL["실패 단계 기록"]:::fail
   end
 
   subgraph NORM["정규화"]
-    direction LR
-    ADP["adapter 자동 선택<br/>점수 = prio×1000 + spec×10 + match"]:::proc
-    FRAG["fragment 병합<br/>채널별 누적"]:::proc
+    direction TB
+    ADP["adapter 자동 선택<br/>prio×1000+spec×10+match"]:::proc
+    FRAG["fragment 누적 병합"]:::proc
     BLD["공통 builder 6종"]:::proc
     ADP --> FRAG --> BLD
   end
 
-  subgraph BASE["기반 — 비밀, 스키마, 캐시"]
-    direction LR
-    VAULT@{ icon: "fa6-solid:lock", label: "Ansible Vault<br/>제조사별 자격증명" }
-    ADPY@{ icon: "fa6-solid:box-archive", label: "adapter 41종 YAML" }
-    SCHEMA@{ icon: "fa6-solid:database", label: "schema<br/>10섹션, baseline" }
-    REDIS@{ icon: "logos:redis", label: "Redis fact 캐시" }
-  end
+  OUT(["출력<br/>13필드 표준 JSON<br/>성공이든 실패든 같은 구조"]):::env
 
-  OUT(["출력 — 13필드 표준 JSON<br/>성공이든 실패든 같은 구조"]):::env
-
-  PARAM -->|"HTTPS (443)"| ST1
-  ST2 --> PRE
-  PP4 -->|"통과"| CH
-  PP1 -.->|"차단"| PFAIL
-  PP4 -.->|"차단"| PFAIL
-  RFG -.->|"무인증 감지 후 로드"| VAULT
-  ADP -.-> ADPY
-  BLD -.->|"정합 검증"| SCHEMA
-  OSG -.->|"setup 캐싱"| REDIS
+  IN -->|"HTTPS 443"| ORCH
+  ORCH -->|"Gather 단계"| CH
   CH -->|"raw 응답"| NORM
-  BLD --> OUT
+  NORM --> OUT
   PFAIL --> OUT
-  ST4 -.->|"회귀 통과 후"| OUT
+
+  subgraph BASE["기반 자산 — 이 위에서 동작"]
+    direction LR
+    VAULT["Ansible Vault<br/>제조사별 자격증명"]:::store
+    ADPY["adapter YAML"]:::store
+    SCHEMA["schema · baseline"]:::store
+    REDIS["Redis fact 캐시"]:::store
+  end
+  NORM -.->|"Vault · schema · 캐시 참조"| BASE
 
   subgraph LEGEND["범례"]
     direction LR
@@ -82,12 +76,11 @@ flowchart TB
     LG3["출력"]:::env
     LG4["실패, 차단"]:::fail
   end
+  BASE ~~~ LEGEND
 
+  classDef input fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
   classDef proc fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px
+  classDef gate fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:1.5px
   classDef store fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:1.5px
   classDef env fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
   classDef fail fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:1.5px
-
-  class ST1,ST2,ST3,ST4,PP1,PP2,PP3,PP4,OSG,ESXG,RFG proc
-  class VAULT,ADPY,SCHEMA,REDIS store
-  class PORTAL,PARAM proc

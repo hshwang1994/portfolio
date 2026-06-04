@@ -1,8 +1,6 @@
 ---
 title: 바뀐 코드를 기준값과 자동 비교, 버그면 배포 차단
 config:
-  layout: elk
-  look: neo
   theme: base
   themeVariables:
     fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
@@ -12,21 +10,26 @@ config:
     edgeLabelBackground: '#FFFFFF'
     clusterBkg: '#F8FAFC'
     clusterBorder: '#CBD5E1'
+  flowchart:
+    nodeSpacing: 40
+    rankSpacing: 65
+    padding: 8
 ---
-flowchart TD
+flowchart LR
     CHANGE(["코드와 규칙 변경"]):::input
     TEST@{ icon: "logos:python", label: "자동 테스트 실행 (Python)" }
     CMP{"기준값과 일치?"}:::warn
     PASS(["일치, 배포 허용"]):::ok
     DIFF{"차이 원인?"}:::warn
-    EXT(["외부 변경, 기준값 갱신"]):::proc
-    BUG(["코드 버그, 배포 차단 후 수정"]):::fail
+    EXT(["외부 변경<br/>기준값 갱신"]):::proc
+    BUG(["코드 버그<br/>배포 차단 후 수정"]):::fail
 
     CHANGE --> TEST --> CMP
     CMP -- "일치" --> PASS
     CMP -- "불일치" --> DIFF
     DIFF -- "외부 변경" --> EXT --> PASS
-    DIFF -- "코드 버그" --> BUG --> CHANGE
+    DIFF -- "코드 버그" --> BUG
+    BUG -.->|"수정 후 재검증"| CHANGE
 
     TEST:::proc
 
@@ -34,10 +37,11 @@ flowchart TD
       direction LR
       LG_A["입력"]:::input
       LG_B["처리"]:::proc
-      LG_C["통과, 출력"]:::ok
-      LG_D["주의, 분기"]:::warn
-      LG_E["실패, 차단"]:::fail
+      LG_C["통과·출력"]:::ok
+      LG_D["분기·점검"]:::warn
+      LG_E["실패·차단"]:::fail
     end
+    PASS ~~~ LEGEND
 
     classDef input fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
     classDef proc  fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px

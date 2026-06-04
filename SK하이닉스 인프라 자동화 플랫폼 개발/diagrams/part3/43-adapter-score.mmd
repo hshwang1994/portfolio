@@ -1,8 +1,6 @@
 ---
-title: 제조사, 모델, 펌웨어 점수로 가장 맞는 Adapter 자동 선택
+title: 제조사·모델·펌웨어 점수로 가장 맞는 Adapter 자동 선택
 config:
-  layout: elk
-  look: neo
   theme: base
   themeVariables:
     fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
@@ -12,47 +10,41 @@ config:
     edgeLabelBackground: '#FFFFFF'
     clusterBkg: '#F8FAFC'
     clusterBorder: '#CBD5E1'
+  flowchart:
+    nodeSpacing: 34
+    rankSpacing: 70
+    padding: 10
 ---
-flowchart TD
-    START(["IP 하나로 대상 서버 접속<br/>Linux, Windows, ESXi, Redfish (BMC)"]):::input
+flowchart LR
+    DETECT["장비 식별 감지<br/>제조사·모델·펌웨어<br/>예) Dell · iDRAC9 · 6.x"]:::input
 
-    DETECT["장비 식별 정보 감지<br/>제조사, 모델, 펌웨어 버전"]:::proc
-    VAULT@{ icon: "logos:vault-icon", label: "Vault, 제조사별 자격증명" }
-    CHANNEL["점검 채널 결정<br/>WinRM, SSH(22), vSphere, BMC(443)"]:::proc
+    subgraph CAND["등록 Adapter 후보 — 점수 = prio×1000 + spec×10 + match"]
+      direction TB
+      C1["dell_idrac10 · prio 120"]:::proc
+      C2["dell_idrac9 · prio 100<br/>모델·펌웨어 일치 → 최고점"]:::ok
+      C3["dell_idrac · prio 10 · 모델 무관"]:::proc
+      C4["redfish_generic · prio 0"]:::warn
+      C1 ~~~ C2 ~~~ C3 ~~~ C4
+    end
 
-    CANDIDATES["등록된 Adapter 후보 나열"]:::proc
-    SCORE["후보마다 점수 계산<br/>제조사, 모델, 펌웨어 일치"]:::proc
-    PICK{"가장 높은 점수의<br/>후보가 있는가?"}:::warn
+    PICK{"임계 이상<br/>후보가 있는가?"}:::warn
+    BEST(["dell_idrac9 선택<br/>딱 맞는 Adapter로 수집"]):::ok
+    FB(["매치 없으면 generic fallback<br/>최소 점검 + 표준 미준수 표기"]):::warn
 
-    BEST(["딱 맞는 Adapter 선택"]):::ok
-    FALLBACK(["기본 Adapter로 fallback"]):::warn
-
-    RUN["선택된 Adapter로<br/>Ansible 점검, 수집 실행"]:::proc
-    TEST@{ icon: "logos:python", label: "Python, pytest, baseline 회귀 검증" }
-    DONE(["장비 정보 수집 완료"]):::ok
-
-    START --> DETECT
-    VAULT -. "제조사별 인증" .-> START
-    DETECT --> CHANNEL --> CANDIDATES --> SCORE --> PICK
-    PICK -- "후보 있음 (최고 점수)" --> BEST
-    PICK -- "임계 미만, 후보 없음" --> FALLBACK
-    BEST --> RUN
-    FALLBACK --> RUN
-    RUN --> TEST --> DONE
-
-    VAULT:::proc
-    TEST:::ok
+    DETECT --> CAND --> PICK
+    PICK -- "최고 점수 후보" --> BEST
+    PICK -. "임계 미만" .-> FB
 
     subgraph LEGEND["범례"]
       direction LR
       LG_A["입력"]:::input
-      LG_B["처리"]:::proc
-      LG_C["통과, 출력"]:::ok
-      LG_D["주의, 분기"]:::warn
+      LG_B["후보·처리"]:::proc
+      LG_C["선택·출력"]:::ok
+      LG_D["분기·fallback"]:::warn
     end
+    BEST ~~~ LEGEND
 
     classDef input fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
     classDef proc  fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px
     classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:1.5px
     classDef warn  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:1.5px
-    classDef fail  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:1.5px

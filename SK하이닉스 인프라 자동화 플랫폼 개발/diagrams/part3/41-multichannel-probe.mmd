@@ -1,8 +1,6 @@
 ---
 title: IP 하나로 대상 종류에 맞춰 자동 점검 후 표준 결과 출력
 config:
-  layout: elk
-  look: neo
   theme: base
   themeVariables:
     fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
@@ -12,14 +10,18 @@ config:
     edgeLabelBackground: '#FFFFFF'
     clusterBkg: '#F8FAFC'
     clusterBorder: '#CBD5E1'
+  flowchart:
+    nodeSpacing: 45
+    rankSpacing: 70
+    padding: 8
 ---
-flowchart TD
+flowchart LR
     IN(["IP 하나, 대상 종류 입력"]):::input
     PICK{"대상 종류로<br/>점검 방법 선택"}:::warn
-    OS@{ icon: "fa6-solid:desktop", label: "운영체제 점검 (윈도우, 리눅스)" }
+    OS@{ icon: "fa6-solid:desktop", label: "운영체제 점검 (윈도우·리눅스)" }
     ESXI@{ icon: "logos:vmware", label: "가상화 점검 (vSphere)" }
     HW@{ icon: "fa6-solid:server", label: "서버 하드웨어 점검" }
-    STD(["표준 형식 결과<br/>성공, 실패 같은 구조"]):::ok
+    STD(["표준 형식 결과<br/>성공·실패 같은 구조"]):::ok
 
     IN --> PICK
     PICK -- "서버 OS" --> OS --> STD
@@ -34,9 +36,10 @@ flowchart TD
       direction LR
       LG_A["입력"]:::input
       LG_B["처리"]:::proc
-      LG_C["통과, 출력"]:::ok
-      LG_D["주의, 분기"]:::warn
+      LG_C["통과·출력"]:::ok
+      LG_D["분기·선택"]:::warn
     end
+    STD ~~~ LEGEND
 
     classDef input fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
     classDef proc  fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px

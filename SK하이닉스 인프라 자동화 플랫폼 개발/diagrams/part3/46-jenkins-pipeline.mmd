@@ -1,8 +1,6 @@
 ---
 title: 단계별 자동 점검, 한 단계라도 실패하면 배포 차단
 config:
-  layout: elk
-  look: neo
   theme: base
   themeVariables:
     fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
@@ -12,8 +10,12 @@ config:
     edgeLabelBackground: '#FFFFFF'
     clusterBkg: '#F8FAFC'
     clusterBorder: '#CBD5E1'
+  flowchart:
+    nodeSpacing: 40
+    rankSpacing: 60
+    padding: 8
 ---
-flowchart TD
+flowchart LR
     START@{ icon: "logos:jenkins", label: "Jenkins 파이프라인 시작" }
     S1{"① 입력 형식 검증"}:::warn
     S2["② 점검 실행"]:::proc
@@ -26,10 +28,10 @@ flowchart TD
     S1 -- "통과" --> S2 --> S3
     S3 -- "정합" --> S4
     S4 -- "통과" --> OK
-    S1 -- "실패" --> BLOCK
-    S3 -- "위반" --> BLOCK
-    S4 -- "실패" --> BLOCK
-    BLOCK -.-> START
+    S1 -. "실패" .-> BLOCK
+    S3 -. "위반" .-> BLOCK
+    S4 -. "실패" .-> BLOCK
+    BLOCK -.->|"재시도"| START
 
     START:::input
 
@@ -37,10 +39,11 @@ flowchart TD
       direction LR
       LG_A["입력"]:::input
       LG_B["처리"]:::proc
-      LG_C["통과, 출력"]:::ok
-      LG_D["주의, 분기"]:::warn
-      LG_E["실패, 차단"]:::fail
+      LG_C["통과·출력"]:::ok
+      LG_D["분기·점검"]:::warn
+      LG_E["실패·차단"]:::fail
     end
+    OK ~~~ LEGEND
 
     classDef input fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
     classDef proc  fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px
