@@ -1,45 +1,40 @@
 <!DOCTYPE html><html><head><meta charset="utf-8"><style>
 html,body{margin:0;padding:0;background:#fff}
-svg{font-family:'Malgun Gothic','Pretendard','Noto Sans KR',sans-serif}</style></head><body>
-<svg width="1040" height="720" viewBox="0 0 1040 720" xmlns="http://www.w3.org/2000/svg">
+svg{font-family:'Segoe UI','Malgun Gothic','Pretendard',sans-serif}</style></head><body>
+<svg width="1060" height="720" viewBox="0 0 1060 720" xmlns="http://www.w3.org/2000/svg">
 <defs>
-<marker id="arr" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-<path d="M 0 0 L 10 5 L 0 10 z" fill="#94A3B8"/></marker>
-<marker id="arrR" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-<path d="M 0 0 L 10 5 L 0 10 z" fill="#F43F5E"/></marker>
-<marker id="arrA" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-<path d="M 0 0 L 10 5 L 0 10 z" fill="#F59E0B"/></marker>
-<filter id="sh" x="-20%" y="-20%" width="140%" height="160%">
-<feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#0F172A" flood-opacity="0.12"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 1L9 5L0 9z" fill="#3B4658"/></marker>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 1L9 5L0 9z" fill="#B85450"/></marker>
+<marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 1L9 5L0 9z" fill="#6FA253"/></marker>
 </defs>
-<rect width="1040" height="720" fill="#FFFFFF"/>
-<text x="60" y="50" font-size="26" font-weight="800" fill="#1E293B">닫힌 루프 (closed-loop) — 자기개선 4단계</text>
-<text x="60" y="78" font-size="14.5" fill="#64748B">한 번 겪은 오류는 자산으로 환원되어, 다음부터 기계가 자동으로 막는다</text>
-<g filter="url(#sh)"><rect x="370.0" y="132.0" width="300" height="96" rx="12" fill="#fff" stroke="#F43F5E" stroke-opacity="0.35" stroke-width="1.4"/><rect x="370.0" y="132.0" width="300" height="5" rx="2.5" fill="#F43F5E"/></g>
-<circle cx="394.0" cy="160.0" r="12" fill="#F43F5E"/><text x="394.0" y="164.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">1</text>
-<text x="414.0" y="160.0" font-size="16" font-weight="700" fill="#1E293B">① 수집</text>
-<text x="414.0" y="180.0" font-size="12" fill="#64748B">사고·오탐 즉시 기록</text>
-<text x="414.0" y="197.0" font-size="12" fill="#64748B">FAILURE_PATTERNS · CONVENTION_DRIFT</text>
-<g filter="url(#sh)"><rect x="620.0" y="342.0" width="300" height="96" rx="12" fill="#fff" stroke="#F59E0B" stroke-opacity="0.35" stroke-width="1.4"/><rect x="620.0" y="342.0" width="300" height="5" rx="2.5" fill="#F59E0B"/></g>
-<circle cx="644.0" cy="370.0" r="12" fill="#F59E0B"/><text x="644.0" y="374.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">2</text>
-<text x="664.0" y="370.0" font-size="16" font-weight="700" fill="#1E293B">② 분류</text>
-<text x="664.0" y="390.0" font-size="12" fill="#64748B">자동 검출 가능한가?</text>
-<text x="664.0" y="407.0" font-size="12" fill="#64748B">정규식·AST·파일 비교 4갈래</text>
-<g filter="url(#sh)"><rect x="370.0" y="552.0" width="300" height="96" rx="12" fill="#fff" stroke="#0EA5E9" stroke-opacity="0.35" stroke-width="1.4"/><rect x="370.0" y="552.0" width="300" height="5" rx="2.5" fill="#0EA5E9"/></g>
-<circle cx="394.0" cy="580.0" r="12" fill="#0EA5E9"/><text x="394.0" y="584.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">3</text>
-<text x="414.0" y="580.0" font-size="16" font-weight="700" fill="#1E293B">③ 변환</text>
-<text x="414.0" y="600.0" font-size="12" fill="#64748B">정책(.yaml)·규칙(.md)·hook(.py)</text>
-<text x="414.0" y="617.0" font-size="12" fill="#64748B">어디로 옮길지 결정</text>
-<g filter="url(#sh)"><rect x="120.0" y="342.0" width="300" height="96" rx="12" fill="#fff" stroke="#10B981" stroke-opacity="0.35" stroke-width="1.4"/><rect x="120.0" y="342.0" width="300" height="5" rx="2.5" fill="#10B981"/></g>
-<circle cx="144.0" cy="370.0" r="12" fill="#10B981"/><text x="144.0" y="374.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">4</text>
-<text x="164.0" y="370.0" font-size="16" font-weight="700" fill="#1E293B">④ 검증</text>
-<text x="164.0" y="390.0" font-size="12" fill="#64748B">과거 사례를 hook에 재통과</text>
-<text x="164.0" y="407.0" font-size="12" fill="#64748B">실제로 잡히는지 실측</text>
-<path d="M 640.0 190 L 700 190 L 700 336.0" fill="none" stroke="#94A3B8" stroke-width="2.4" marker-end="url(#arr)" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M 700 444.0 L 700 590 L 640.0 590" fill="none" stroke="#94A3B8" stroke-width="2.4" marker-end="url(#arr)" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M 400.0 590 L 340 590 L 340 444.0" fill="none" stroke="#94A3B8" stroke-width="2.4" marker-end="url(#arr)" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M 340 336.0 L 340 190 L 400.0 190" fill="none" stroke="#94A3B8" stroke-width="2.4" marker-end="url(#arr)" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="520" cy="390" r="78" fill="#FFFBEB" stroke="#F59E0B" stroke-opacity="0.5" stroke-width="1.6"/>
-<text x="520" y="384" font-size="18" font-weight="800" fill="#1E293B" text-anchor="middle">닫힌 루프</text>
-<text x="520" y="408" font-size="13" fill="#64748B" text-anchor="middle">누적 108건</text>
+<rect width="1060" height="720" fill="#FFFFFF"/>
+<text x="60" y="48" font-size="27" font-weight="700" fill="#1F2937">closed loop — 자기개선 4단계</text>
+<text x="60" y="78" font-size="16" fill="#54607A">한 번 겪은 오류는 자산으로 반영되어, 다음부터 자동으로 막힌다.</text>
+<rect x="380.0" y="147.0" width="300" height="98" rx="6" fill="#FFFFFF" stroke="#7A8699" stroke-width="1.8"/>
+<circle cx="404.0" cy="174.0" r="12.5" fill="#3B4658"/><text x="404.0" y="178.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+<text x="424.0" y="176.0" font-size="16" font-weight="700" fill="#1F2937">① 수집</text>
+<text x="424.0" y="198.0" font-size="13" fill="#54607A">사고, 오탐을 즉시 기록</text>
+<text x="424.0" y="217.0" font-size="13" fill="#54607A">FAILURE_PATTERNS, CONVENTION_DRIFT</text>
+<rect x="640.0" y="369.0" width="300" height="98" rx="6" fill="#FFFFFF" stroke="#7A8699" stroke-width="1.8"/>
+<circle cx="664.0" cy="396.0" r="12.5" fill="#3B4658"/><text x="664.0" y="400.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+<text x="684.0" y="398.0" font-size="16" font-weight="700" fill="#1F2937">② 분류</text>
+<text x="684.0" y="420.0" font-size="13" fill="#54607A">자동으로 잡을 수 있나</text>
+<text x="684.0" y="439.0" font-size="13" fill="#54607A">정규식, AST, 파일 비교 4갈래</text>
+<rect x="380.0" y="575.0" width="300" height="98" rx="6" fill="#FFFFFF" stroke="#7A8699" stroke-width="1.8"/>
+<circle cx="404.0" cy="602.0" r="12.5" fill="#3B4658"/><text x="404.0" y="606.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+<text x="424.0" y="604.0" font-size="16" font-weight="700" fill="#1F2937">③ 변환</text>
+<text x="424.0" y="626.0" font-size="13" fill="#54607A">policy, rules, git hook</text>
+<text x="424.0" y="645.0" font-size="13" fill="#54607A">어디로 옮길지 결정</text>
+<rect x="120.0" y="369.0" width="300" height="98" rx="6" fill="#FFFFFF" stroke="#7A8699" stroke-width="1.8"/>
+<circle cx="144.0" cy="396.0" r="12.5" fill="#3B4658"/><text x="144.0" y="400.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+<text x="164.0" y="398.0" font-size="16" font-weight="700" fill="#1F2937">④ 검증</text>
+<text x="164.0" y="420.0" font-size="13" fill="#54607A">과거 사례를 hook에 다시 통과</text>
+<text x="164.0" y="439.0" font-size="13" fill="#54607A">실제로 잡히는지 확인</text>
+<path d="M 680.0 196 L 790 196 L 790 369.0" fill="none" stroke="#3B4658" stroke-width="2.0" marker-end="url(#a)"/>
+<path d="M 790 467.0 L 790 624 L 680.0 624" fill="none" stroke="#3B4658" stroke-width="2.0" marker-end="url(#a)"/>
+<path d="M 380.0 624 L 270 624 L 270 467.0" fill="none" stroke="#3B4658" stroke-width="2.0" marker-end="url(#a)"/>
+<path d="M 270 369.0 L 270 196 L 380.0 196" fill="none" stroke="#3B4658" stroke-width="2.0" marker-end="url(#a)"/>
+<circle cx="530" cy="418" r="76" fill="#F1F4F9" stroke="#C7D0DD" stroke-width="1.7"/>
+<text x="530" y="412" font-size="18" font-weight="700" fill="#1F2937" text-anchor="middle">closed loop</text>
+<text x="530" y="436" font-size="13.5" fill="#54607A" text-anchor="middle">누적 108건</text>
 </svg></body></html>
