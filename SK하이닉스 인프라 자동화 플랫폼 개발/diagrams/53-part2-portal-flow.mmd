@@ -1,36 +1,58 @@
 ---
-title: 포털 입력 → 알맞은 서버가 자동 작업 → 결과 표시
+title: 포털 클릭 한 번에서 Ansible 실행까지 — 포털 자동화 구동 시퀀스
 config:
-  layout: elk
-  look: neo
   theme: base
   themeVariables:
-    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
-    fontSize: '17px'
-    primaryColor: '#EEF2FF'
+    fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
+    fontSize: '15px'
     primaryTextColor: '#1E293B'
-    primaryBorderColor: '#6366F1'
-    lineColor: '#94A3B8'
-    tertiaryColor: '#F8FAFC'
-    edgeLabelBackground: '#FFFFFF'
+    lineColor: '#64748B'
+    actorBkg: '#EEF2FF'
+    actorBorder: '#6366F1'
+    actorTextColor: '#1E293B'
+    noteBkgColor: '#FFFBEB'
+    noteBorderColor: '#F59E0B'
+    noteTextColor: '#1E293B'
 ---
-flowchart TD
-    PORTAL@{ icon: "fa6-solid:window-maximize", label: "포털에서 작업 입력" }
-    ROUTE{"개발 / 운영 구분"}:::gate
-    INV["작업 대상 목록 자동 생성"]:::act
-    PICK["현장 위치에 맞는 서버 선택"]:::act
-    RUN@{ icon: "logos:ansible", label: "서버 자동 설정 (Ansible)" }
-    TGT@{ icon: "fa6-solid:server", label: "대상 서버" }
-    OK(["결과 → 포털 표시"]):::ok
+sequenceDiagram
+    autonumber
+    actor PORTAL as 사내 클라우드 포털
+    participant JK as Jenkins 마스터<br/>(개발/운영)
+    participant INV as 동적 인벤토리<br/>my_inventory.sh
+    participant ANS as Ansible<br/>(사이트 러너)
+    participant SRV as 대상 서버
 
-    PORTAL --> ROUTE
-    ROUTE -- "개발" --> INV
-    ROUTE -- "운영" --> INV
-    INV --> PICK --> RUN --> TGT --> OK
+    rect rgb(241, 245, 249)
+    note over PORTAL,JK: 입력 — 3 파라미터로 작업 트리거
+    PORTAL->>JK: loc, target_type, inventory_json
+    end
 
-    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
-    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
-    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
-    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
-    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
-    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px
+    rect rgb(238, 242, 255)
+    note over JK,ANS: 오케스트레이션 — 라벨로 러너 선택
+    JK->>JK: label "loc && target_type" 로 러너 선택
+    JK->>ANS: playbook 호출 (INVENTORY_JSON 전달)
+    end
+
+    rect rgb(238, 242, 255)
+    note over ANS,INV: 처리 — 호스트 JSON을 인벤토리로 변환
+    ANS->>INV: INVENTORY_JSON + TARGET_TYPE
+    INV->>INV: hostname → 표시명<br/>service_ip → ansible_host (나머지 hostvars)
+    alt 검증 실패 (IP 오류, 중복, 빈 배열)
+        INV-->>ANS: 대상 없이 안전하게 차단
+    else 정상
+        INV->>ANS: all 그룹 + hostvars
+    end
+    end
+
+    rect rgb(255, 251, 235)
+    note over ANS: 자격증명 — ansible-vault + Jenkins Credentials
+    ANS->>ANS: vault 복호화 (Jenkins가 키 관리)
+    end
+
+    rect rgb(236, 253, 245)
+    note over ANS,SRV: 출력 — 실행 후 결과 회신
+    ANS->>SRV: SSH (22) / WinRM 으로 task 실행
+    SRV-->>ANS: 실행 결과
+    ANS-->>JK: 빌드 성공 / 실패
+    JK-->>PORTAL: 결과 반영
+    end

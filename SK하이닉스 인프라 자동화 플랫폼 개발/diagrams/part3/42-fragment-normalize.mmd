@@ -1,33 +1,65 @@
 ---
-title: 여러 점검 조각을 합쳐 표준 형식으로 (일부 실패는 격리)
+title: Fragment 정규화 데이터 플로우 — 조각 → 누적 병합 → 13필드 표준, 실패 격리
 config:
   layout: elk
   look: neo
   theme: base
   themeVariables:
-    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
-    fontSize: '17px'
-    primaryColor: '#EEF2FF'
+    fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
+    fontSize: '14px'
     primaryTextColor: '#1E293B'
-    primaryBorderColor: '#6366F1'
-    lineColor: '#94A3B8'
-    tertiaryColor: '#F8FAFC'
+    lineColor: '#64748B'
     edgeLabelBackground: '#FFFFFF'
+    clusterBkg: '#F8FAFC'
+    clusterBorder: '#CBD5E1'
 ---
-flowchart TD
-    G(["CPU, 메모리, 디스크, 네트워크<br/>항목별 점검"]):::start
-    MERGE["조각들을 하나로 합침"]:::act
-    BUILD["표준 형식으로 정리"]:::act
-    ENV(["표준 결과 (정해진 형식)"]):::ok
-    FAILB["일부 실패는 그 항목만<br/>'실패'로 표시"]:::stop
+flowchart LR
+  subgraph GATHER["① 점검별 조각 (각 gather는 자기 fragment만)"]
+    direction TB
+    CPU["CPU 점검"]:::ok
+    MEM["메모리 점검"]:::ok
+    STO["저장장치 점검<br/>(실패)"]:::fail
+    NET["네트워크 점검"]:::ok
+  end
 
-    G --> MERGE --> BUILD --> ENV
-    BUILD -.->|"실패 격리"| FAILB
-    FAILB --> ENV
+  subgraph MERGE["② merge_fragment 누적 병합"]
+    direction TB
+    UNION["섹션 목록 union 누적"]:::proc
+    DEEP["data 재귀 병합"]:::proc
+    RESET["fragment 초기화<br/>다음 점검 오염 차단"]:::warn
+    UNION --> DEEP --> RESET
+  end
 
-    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
-    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
-    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
-    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
-    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
-    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px
+  subgraph BUILD["③ 공통 builder 6종"]
+    direction TB
+    SEC["build_sections<br/>10섹션 상태 격리"]:::proc
+    ST["build_status<br/>success / partial / failed"]:::proc
+    ERR["build_errors<br/>실패 섹션만 errors[]"]:::proc
+    META["build_meta, build_correlation"]:::proc
+    OUT["build_output"]:::proc
+    SEC --> ST --> ERR --> META --> OUT
+  end
+
+  ENV(["표준 envelope 13필드<br/>status=partial, 실패 섹션만 격리"]):::env
+
+  CPU --> UNION
+  MEM --> UNION
+  NET --> UNION
+  STO -->|"failed + errors[]"| UNION
+  RESET -.->|"다음 점검 반복"| GATHER
+  DEEP --> SEC
+  OUT --> ENV
+
+  subgraph LEGEND["범례"]
+    direction LR
+    L1["성공"]:::ok
+    L2["처리"]:::proc
+    L3["실패 격리"]:::fail
+    L4["표준 출력"]:::env
+  end
+
+  classDef ok fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:1.5px
+  classDef fail fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:1.5px
+  classDef proc fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px
+  classDef warn fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:1.5px
+  classDef env fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px

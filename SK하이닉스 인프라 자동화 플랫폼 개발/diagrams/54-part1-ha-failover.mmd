@@ -1,49 +1,55 @@
 ---
-title: 운영 Jenkins 마스터 장애 시 대기 마스터가 무중단 인수?
+title: Jenkins 마스터 Active-Passive 인계 — NFS 공유 스토리지 + Fencing
 config:
-  layout: elk
-  look: neo
   theme: base
   themeVariables:
-    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
-    fontSize: '16px'
-    primaryColor: '#EEF2FF'
+    fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
+    fontSize: '15px'
     primaryTextColor: '#1E293B'
-    primaryBorderColor: '#6366F1'
     lineColor: '#64748B'
-    edgeLabelBackground: '#FFFFFF'
+    actorBkg: '#EEF2FF'
+    actorBorder: '#6366F1'
+    actorTextColor: '#1E293B'
+    noteBkgColor: '#FFFBEB'
+    noteBorderColor: '#F59E0B'
+    noteTextColor: '#1E293B'
 ---
-flowchart TD
-    NORMAL(["평소 — 운영 Jenkins 마스터가 단독 활성"]):::start
-    ACTIVE@{ icon: "logos:jenkins", label: "운영 Jenkins 마스터 (Active) · Job 스케줄링 · 파라미터 전달" }
-    STATE@{ icon: "logos:redis", label: "Redis · 빌드 상태 · 큐 공유" }
-    FAIL{"운영 마스터 장애 발생?"}:::gate
-    DETECT{"헬스체크가 장애 감지?"}:::gate
-    FENCE["Fencing · 중복 활성 차단 (split-brain 방지)"]:::stop
-    PROMOTE["대기 마스터 (Standby) 를 Active 로 승격"]:::act
-    STANDBY@{ icon: "logos:jenkins", label: "대기 Jenkins 마스터 (Standby → Active)" }
-    INHERIT["Redis 공유 상태 인수 · 진행 중 Job 큐 그대로 복원"]:::act
-    GITLAB@{ icon: "logos:gitlab", label: "GitLab 재연결 · HTTPS (443) checkout" }
-    AGENTS@{ icon: "fa6-solid:server", label: "러너 지역 A·B·C 재연결 (SSH 22)" }
-    RESUME(["무중단 재개 — 설정과 이력 그대로"]):::ok
+sequenceDiagram
+    autonumber
+    participant ACT as 운영 마스터 (Active)
+    participant NFS as /data1 (NFS 공유)
+    participant FEN as Fencing
+    participant STB as 대기 마스터 (Standby)
 
-    NORMAL --> ACTIVE
-    ACTIVE -->|"빌드 상태 기록"| STATE
-    ACTIVE --> FAIL
-    FAIL -- "예" --> DETECT
-    FAIL -- "아니오 — 정상 운영" --> ACTIVE
-    DETECT -- "감지" --> FENCE
-    FENCE --> PROMOTE --> STANDBY
-    STANDBY --> INHERIT
-    STATE -.->|"공유 상태 읽기"| INHERIT
-    INHERIT --> GITLAB
-    INHERIT --> AGENTS
-    GITLAB --> RESUME
-    AGENTS --> RESUME
+    Note over ACT,STB: 무료 오픈소스의 HA 부재를 인프라 레벨로 우회
 
-    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
-    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
-    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
-    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
-    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
-    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px
+    rect rgb(236, 253, 245)
+    Note over ACT,NFS: 평시 — 운영 마스터 단독 서비스
+    ACT->>NFS: /data1 마운트 (JENKINS_HOME 읽기/쓰기)
+    ACT->>ACT: credentials, job 이력 서비스
+    Note over STB: 대기 마스터는 서비스 내려둠 (상태 비공유)
+    end
+
+    rect rgb(255, 241, 242)
+    Note over ACT: 장애 발생 — 운영 마스터 다운
+    ACT--xACT: 서비스 중단
+    end
+
+    FEN-->>ACT: 헬스체크가 장애 감지
+
+    rect rgb(255, 251, 235)
+    Note over FEN,STB: Split-brain 방지 — 동시 기동 차단
+    FEN->>ACT: 운영 마스터 강제 격리 (fencing)
+    Note over NFS: NFS 미마운트 시 기동 거부 (빈 상태 방지)
+    end
+
+    FEN->>STB: 인계 승인 (단일 active 보장)
+
+    rect rgb(236, 253, 245)
+    Note over STB,NFS: 대기 마스터 승격
+    STB->>NFS: 같은 /data1 마운트 후 Jenkins 기동
+    NFS-->>STB: credentials, job 이력 그대로 로드
+    Note over STB: 서비스 재개 (데이터 손실 없음)
+    end
+
+    Note over ACT,STB: GitLab은 VMware FT로 무중단 — Jenkins HA와 별개 방식

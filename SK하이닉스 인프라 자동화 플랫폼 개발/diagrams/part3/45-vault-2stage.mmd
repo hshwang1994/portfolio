@@ -1,31 +1,43 @@
 ---
-title: 제조사 먼저 감지 → 맞는 자격증명으로 인증 → 수집
+title: Vault 2단계 로딩 — 무인증 벤더 감지 → 자격증명 복호화 → 인증 수집
 config:
-  layout: elk
-  look: neo
   theme: base
   themeVariables:
-    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
-    fontSize: '17px'
-    primaryColor: '#EEF2FF'
+    fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
+    fontSize: '15px'
     primaryTextColor: '#1E293B'
-    primaryBorderColor: '#6366F1'
-    lineColor: '#94A3B8'
-    tertiaryColor: '#F8FAFC'
-    edgeLabelBackground: '#FFFFFF'
+    lineColor: '#64748B'
+    actorBkg: '#EEF2FF'
+    actorBorder: '#6366F1'
+    actorTextColor: '#1E293B'
+    noteBkgColor: '#FFFBEB'
+    noteBorderColor: '#F59E0B'
+    noteTextColor: '#1E293B'
 ---
-flowchart TD
-    START(["서버 하드웨어 점검 시작"]):::start
-    DETECT["① 로그인 없이 제조사 감지"]:::act
-    LOAD@{ icon: "logos:vault-icon", label: "② 맞는 비밀번호를 금고(Vault)에서 꺼냄" }
-    AUTH["③ 인증 후 정보 수집"]:::act
-    RESULT(["표준 결과"]):::ok
+sequenceDiagram
+    autonumber
+    participant A as 점검 자동화<br/>(Ansible 러너)
+    participant B as 서버 BMC<br/>(Redfish, 443)
+    participant V as Vault<br/>(제조사별 자격증명)
 
-    START --> DETECT --> LOAD --> AUTH --> RESULT
+    Note over A,V: 1단계 — 무인증 벤더 감지 (계정 없이 ServiceRoot만)
+    rect rgb(238, 242, 255)
+        A->>B: GET /redfish/v1/ (인증 헤더 없음)
+        B-->>A: Manufacturer "Dell Inc."
+        A->>A: vendor_aliases로 정규화 → dell
+    end
 
-    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
-    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
-    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
-    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
-    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
-    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px
+    Note over A,V: 2단계 — 벤더에 맞는 vault 복호화 로드
+    rect rgb(236, 253, 245)
+        A->>V: vault/redfish/dell.yml 복호화
+        V-->>A: username / password (메모리, no_log)
+    end
+
+    Note over A,V: 3단계 — 인증으로 표준 수집
+    A->>B: GET Systems / Managers / Chassis (Basic Auth)
+    B-->>A: 하드웨어, BMC, 전원 데이터
+    A->>A: Fragment 병합 → 13필드 envelope
+
+    Note over A,B: 실패 분기 — 1단계 건너뛰고 벤더 가정 시
+    A--xB: 잘못된 vault로 인증 시도
+    B--xA: 401 Unauthorized (2단계 분리로 방지됨)

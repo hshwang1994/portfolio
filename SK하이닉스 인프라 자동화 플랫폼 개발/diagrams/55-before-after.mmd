@@ -1,31 +1,48 @@
 ---
 title: 도입 전(AS-IS) → 도입 후(TO-BE)
 config:
+  layout: elk
+  look: neo
   theme: base
   themeVariables:
-    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
     fontSize: '15px'
     primaryTextColor: '#1E293B'
     lineColor: '#64748B'
+    edgeLabelBackground: '#FFFFFF'
     clusterBkg: '#F8FAFC'
     clusterBorder: '#CBD5E1'
 ---
 flowchart LR
-    subgraph BEFORE["AS-IS · 도입 전"]
-      direction TB
-      B1["서버를 한 대씩 손으로 준비하고 점검<br/>한 대 5~30분(현장 추정)"]:::bad
-      B2["무료 오픈소스, 자체 고가용성 없음"]:::bad
-      B3["단일 망 — 사고 반경이 큼"]:::bad
-      B4["점검 결과 형식이 제각각<br/>포털이 그대로 받기 어려움"]:::bad
-    end
-    subgraph AFTER["TO-BE · 도입 후"]
-      direction TB
-      A1["포털 클릭 한 번이 자동 점검과 운영으로"]:::good
-      A2["인프라 레벨 고가용성<br/>VMware FT, NFS active-passive"]:::good
-      A3["개발/운영 + 서비스/OOB 3중 망 분리"]:::good
-      A4["IP 하나로 3채널 점검<br/>13필드 표준 JSON"]:::good
-    end
-    BEFORE ==>|"폐쇄망 자동화 플랫폼 구축"| AFTER
+  subgraph ASIS["AS-IS · 도입 전 (수작업 점검)"]
+    direction TB
+    A1["서버 한 대씩 손으로 점검<br/>한 대 5~30분 (현장 추정)"]:::bad
+    A2["무료 오픈소스, 자체 HA 없음"]:::bad
+    A3["단일 망, 사고 반경 큼"]:::bad
+    A4["점검 결과 형식 제각각<br/>포털이 그대로 못 씀"]:::bad
+    A1 --> A2 --> A3 --> A4
+  end
 
-    classDef bad  color:#000,fill:#fdd,stroke:#c33,stroke-width:2px
-    classDef good color:#000,fill:#dfd,stroke:#3c3,stroke-width:2px
+  BRIDGE{{"폐쇄망 자동화<br/>플랫폼 구축"}}:::axis
+
+  subgraph TOBE["TO-BE · 도입 후 (자동화 플랫폼)"]
+    direction TB
+    B1["포털 클릭 한 번 자동 점검, 운영"]:::good
+    B2["인프라 레벨 HA<br/>VMware FT, NFS active-passive"]:::good
+    B3["개발/운영 + 서비스/OOB 3중 망 분리"]:::good
+    B4["IP 하나로 3채널 → 13필드 표준 JSON"]:::good
+    B1 --> B2 --> B3 --> B4
+  end
+
+  ASIS ==> BRIDGE ==> TOBE
+
+  subgraph LEGEND["범례"]
+    direction LR
+    L1["AS-IS 문제"]:::bad
+    L2["전환 축"]:::axis
+    L3["TO-BE 개선"]:::good
+  end
+
+  classDef bad fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:1.5px
+  classDef good fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:1.5px
+  classDef axis fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px

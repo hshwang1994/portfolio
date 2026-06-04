@@ -1,35 +1,45 @@
 ---
-title: IP 하나로 종류에 맞춰 자동 점검 → 표준 결과
+title: IP 하나로 대상 종류에 맞춰 자동 점검 후 표준 결과 출력
 config:
   layout: elk
   look: neo
   theme: base
   themeVariables:
-    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
-    fontSize: '17px'
-    primaryColor: '#EEF2FF'
+    fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
+    fontSize: '14px'
     primaryTextColor: '#1E293B'
-    primaryBorderColor: '#6366F1'
-    lineColor: '#94A3B8'
-    tertiaryColor: '#F8FAFC'
+    lineColor: '#64748B'
     edgeLabelBackground: '#FFFFFF'
+    clusterBkg: '#F8FAFC'
+    clusterBorder: '#CBD5E1'
 ---
 flowchart TD
-    IN(["IP 하나 + 대상 종류 입력"]):::start
-    PICK{"대상 종류로 점검 방법 선택"}:::gate
-    OS@{ icon: "fa6-solid:desktop", label: "운영체제 점검 (윈도우/리눅스)" }
+    IN(["IP 하나, 대상 종류 입력"]):::input
+    PICK{"대상 종류로<br/>점검 방법 선택"}:::warn
+    OS@{ icon: "fa6-solid:desktop", label: "운영체제 점검 (윈도우, 리눅스)" }
     ESXI@{ icon: "logos:vmware", label: "가상화 점검 (vSphere)" }
     HW@{ icon: "fa6-solid:server", label: "서버 하드웨어 점검" }
-    STD(["표준 형식 결과<br/>성공이든 실패든 같은 구조"]):::ok
+    STD(["표준 형식 결과<br/>성공, 실패 같은 구조"]):::ok
 
     IN --> PICK
     PICK -- "서버 OS" --> OS --> STD
     PICK -- "가상화" --> ESXI --> STD
     PICK -- "하드웨어" --> HW --> STD
 
-    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
-    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
-    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
-    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
-    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
-    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px
+    OS:::proc
+    ESXI:::proc
+    HW:::proc
+
+    subgraph LEGEND["범례"]
+      direction LR
+      LG_A["입력"]:::input
+      LG_B["처리"]:::proc
+      LG_C["통과, 출력"]:::ok
+      LG_D["주의, 분기"]:::warn
+    end
+
+    classDef input fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
+    classDef proc  fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:1.5px
+    classDef warn  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:1.5px
+    classDef fail  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:1.5px

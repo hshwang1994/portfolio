@@ -5,23 +5,22 @@ config:
   look: neo
   theme: base
   themeVariables:
-    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
-    fontSize: '17px'
-    primaryColor: '#EEF2FF'
+    fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
+    fontSize: '14px'
     primaryTextColor: '#1E293B'
-    primaryBorderColor: '#6366F1'
-    lineColor: '#94A3B8'
-    tertiaryColor: '#F8FAFC'
+    lineColor: '#64748B'
     edgeLabelBackground: '#FFFFFF'
+    clusterBkg: '#F8FAFC'
+    clusterBorder: '#CBD5E1'
 ---
 flowchart TD
     START@{ icon: "logos:jenkins", label: "Jenkins 파이프라인 시작" }
-    S1{"① 입력 형식 검증"}:::gate
-    S2["② 점검 실행"]:::act
-    S3{"③ 형식 정합 검증"}:::gate
-    S4{"④ 회귀 점검"}:::gate
-    OK(["통과 → 결과 출력"]):::ok
-    BLOCK(["실패 → 배포 중단<br/>수정 후 재시도"]):::stop
+    S1{"① 입력 형식 검증"}:::warn
+    S2["② 점검 실행"]:::proc
+    S3{"③ 형식 정합 검증"}:::warn
+    S4{"④ 회귀 점검"}:::warn
+    OK(["통과, 결과 출력"]):::ok
+    BLOCK(["실패, 배포 중단<br/>수정 후 재시도"]):::fail
 
     START --> S1
     S1 -- "통과" --> S2 --> S3
@@ -32,9 +31,19 @@ flowchart TD
     S4 -- "실패" --> BLOCK
     BLOCK -.-> START
 
-    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
-    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
-    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
-    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
-    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
-    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px
+    START:::input
+
+    subgraph LEGEND["범례"]
+      direction LR
+      LG_A["입력"]:::input
+      LG_B["처리"]:::proc
+      LG_C["통과, 출력"]:::ok
+      LG_D["주의, 분기"]:::warn
+      LG_E["실패, 차단"]:::fail
+    end
+
+    classDef input fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
+    classDef proc  fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:1.5px
+    classDef warn  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:1.5px
+    classDef fail  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:1.5px

@@ -1,60 +1,88 @@
 ---
-title: 전체 시스템 구조
+title: 폐쇄망 플랫폼 토폴로지 — 개발망/운영망 격리, 지역 A/B/C
 config:
   layout: elk
   look: neo
   theme: base
   themeVariables:
-    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
-    fontSize: '15px'
-    primaryColor: '#EEF2FF'
+    fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
+    fontSize: '14px'
     primaryTextColor: '#1E293B'
-    primaryBorderColor: '#6366F1'
     lineColor: '#64748B'
     edgeLabelBackground: '#FFFFFF'
     clusterBkg: '#F8FAFC'
     clusterBorder: '#CBD5E1'
 ---
 flowchart TB
-    PORTAL["<b>포털</b><br/>작업 선택 → 대상 서버 입력 → Jenkins Job 트리거"]:::portal
-    GITLAB["<b>GitLab</b> · 코드 저장소"]:::ext
+  PORTAL@{ icon: "fa6-solid:window-maximize", label: "사내 클라우드 포털" }
+  FW_EXT{{"방화벽 ①<br/>외부 ↔ 포털"}}:::fw
 
-    subgraph DEV["개발 (운영과 완전 격리)"]
+  subgraph OPS["운영망 (개발과 완전 격리)"]
+    direction TB
+    subgraph OPS_SVC["운영 · 서비스망"]
       direction TB
-      DM["<b>개발 Jenkins 마스터</b><br/>Job 스케줄링 · 파라미터 전달 · Redis"]:::master
-      DA1["<b>지역 A</b> 러너"]:::agent
-      DA2["<b>지역 B</b> 러너"]:::agent
-      DA3["<b>지역 C</b> 러너"]:::agent
-      DM -->|"SSH (22)"| DA1
-      DM -->|"SSH (22)"| DA2
-      DM -->|"SSH (22)"| DA3
+      JM_OPS@{ icon: "logos:jenkins", label: "운영 Jenkins 마스터<br/>active-passive" }
+      GL_A@{ icon: "logos:gitlab", label: "GitLab CE 18.10" }
+      NEXUS_P@{ icon: "fa6-solid:box-archive", label: "Nexus Primary (SSoT)<br/>지역 A 주 데이터센터" }
+      NEXUS_B@{ icon: "fa6-solid:box-archive", label: "Nexus Secondary<br/>지역 B proxy" }
+      NEXUS_C@{ icon: "fa6-solid:box-archive", label: "Nexus Secondary<br/>지역 C proxy" }
     end
-
-    subgraph PRD["운영 (개발과 완전 격리)"]
+    FW_O{{"방화벽 ③<br/>서비스망 ↔ OOB망"}}:::fw
+    subgraph OPS_OOB["운영 · OOB망 (BMC, 파일 배포)"]
       direction TB
-      PM["<b>운영 Jenkins 마스터</b><br/>Job 스케줄링 · 파라미터 전달 · Redis"]:::master
-      PA1["<b>지역 A</b> 러너"]:::agent
-      PA2["<b>지역 B</b> 러너"]:::agent
-      PA3["<b>지역 C</b> 러너"]:::agent
-      PM -->|"SSH (22)"| PA1
-      PM -->|"SSH (22)"| PA2
-      PM -->|"SSH (22)"| PA3
+      RUN_OA@{ icon: "fa6-solid:server", label: "지역 A 러너 2대" }
+      RUN_OB@{ icon: "fa6-solid:server", label: "지역 B 러너 2대" }
+      RUN_OC@{ icon: "fa6-solid:server", label: "지역 C 러너 2대" }
     end
+  end
 
-    TARGET["<b>대상 서버</b><br/>Linux · Windows · ESXi · Redfish (BMC)"]:::target
+  subgraph DEV["개발망 (운영과 완전 격리)"]
+    direction TB
+    subgraph DEV_SVC["개발 · 서비스망"]
+      direction TB
+      JM_DEV@{ icon: "logos:jenkins", label: "개발 Jenkins 마스터<br/>active-passive" }
+      REDIS_D@{ icon: "logos:redis", label: "Redis fact 캐시<br/>VM 로컬" }
+    end
+    FW_D{{"방화벽 ③<br/>서비스망 ↔ OOB망"}}:::fw
+    subgraph DEV_OOB["개발 · OOB망"]
+      direction TB
+      RUN_DA@{ icon: "fa6-solid:server", label: "지역 A 러너 2대" }
+      RUN_DB@{ icon: "fa6-solid:server", label: "지역 B 러너 2대" }
+      RUN_DC@{ icon: "fa6-solid:server", label: "지역 C 러너 2대" }
+    end
+  end
 
-    PORTAL -->|"HTTPS (443)"| DM
-    PORTAL -->|"HTTPS (443)"| PM
-    PM -->|"HTTPS (443) checkout"| GITLAB
-    DA1 -->|"SSH / WinRM / HTTPS"| TARGET
-    DA2 --> TARGET
-    DA3 --> TARGET
-    PA1 -->|"SSH / WinRM / HTTPS"| TARGET
-    PA2 --> TARGET
-    PA3 --> TARGET
+  PORTAL --> FW_EXT
+  FW_EXT -->|"HTTPS (443)"| JM_OPS
+  FW_EXT -->|"HTTPS (443)"| JM_DEV
 
-    classDef portal fill:#DBEAFE,stroke:#3B82F6,color:#1E293B,stroke-width:1.5px
-    classDef master fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px
-    classDef agent fill:#F8FAFC,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
-    classDef ext fill:#FEF9C3,stroke:#CA8A04,color:#1E293B,stroke-width:1.5px
-    classDef target fill:#DCFCE7,stroke:#16A34A,color:#1E293B,stroke-width:1.5px
+  NEXUS_P -->|"Webhook (HMAC)"| JM_OPS
+  NEXUS_P -.->|"proxy 캐시"| NEXUS_B
+  NEXUS_P -.->|"proxy 캐시"| NEXUS_C
+  JM_OPS --> FW_O
+  FW_O -->|"SSH (22)"| RUN_OA
+  FW_O -->|"SSH (22)"| RUN_OB
+  FW_O -->|"SSH (22)"| RUN_OC
+
+  JM_DEV --> REDIS_D
+  JM_DEV --> FW_D
+  FW_D -->|"SSH (22)"| RUN_DA
+  FW_D -->|"SSH (22)"| RUN_DB
+  FW_D -->|"SSH (22)"| RUN_DC
+
+  subgraph LEGEND["범례"]
+    direction LR
+    LG1["포털, 진입"]:::ingress
+    LG2["실행 노드"]:::proc
+    LG3["저장소"]:::store
+    LG4["방화벽 경계"]:::fw
+  end
+
+  classDef ingress fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
+  classDef proc fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px
+  classDef store fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:1.5px
+  classDef fw fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:1.5px
+
+  class PORTAL ingress
+  class JM_OPS,JM_DEV,RUN_OA,RUN_OB,RUN_OC,RUN_DA,RUN_DB,RUN_DC proc
+  class NEXUS_P,NEXUS_B,NEXUS_C,GL_A,REDIS_D store

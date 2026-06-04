@@ -1,36 +1,61 @@
 ---
-title: 인프라 자동화 플랫폼 — 클릭 한 번으로 서버 작업과 점검을 자동화
+title: SK하이닉스 인프라 자동화 플랫폼 — 전체 구조
 config:
   layout: elk
   look: neo
   theme: base
   themeVariables:
-    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
-    fontSize: '17px'
-    primaryColor: '#EEF2FF'
+    fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
+    fontSize: '15px'
     primaryTextColor: '#1E293B'
-    primaryBorderColor: '#6366F1'
-    lineColor: '#94A3B8'
-    tertiaryColor: '#F8FAFC'
+    lineColor: '#64748B'
     edgeLabelBackground: '#FFFFFF'
+    clusterBkg: '#F8FAFC'
+    clusterBorder: '#CBD5E1'
 ---
-flowchart TD
-    PORTAL@{ icon: "fa6-solid:window-maximize", label: "사내 포털 (클릭 한 번)" }
-    RUN@{ icon: "logos:ansible", label: "① 자동 실행 (Ansible)" }
-    GATHER["② 정보 수집<br/>장비 상태를 자동 점검"]:::ok
-    TARGET@{ icon: "fa6-solid:server", label: "대상 서버와 장비" }
-    BASE["폐쇄망 자동화 기반<br/>세 레이어를 떠받침"]:::gate
+flowchart LR
+  subgraph IN["입력"]
+    PORTAL@{ icon: "fa6-solid:window-maximize", label: "사내 클라우드 포털<br/>작업 선택, 대상 입력" }
+  end
 
-    PORTAL -->|"요청"| RUN
-    RUN -->|"작업 수행"| TARGET
-    GATHER -->|"상태 점검"| TARGET
-    GATHER -.->|"최신 자산 정보 반영"| PORTAL
-    RUN -.->|"이 기반 위에서 동작"| BASE
-    GATHER -.->|"이 기반 위에서 동작"| BASE
+  subgraph PROC["처리 — 자동화 플랫폼 (3 레이어)"]
+    direction TB
+    P2@{ icon: "logos:jenkins", label: "② 포털 자동화 구동 (part2)<br/>동적 인벤토리, Ansible 실행" }
+    P3@{ icon: "logos:ansible", label: "③ 정보 개더링 (part3)<br/>3채널 점검, 13필드 표준화" }
+    P2 -->|"실행 대상"| P3
+  end
 
-    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
-    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
-    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
-    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
-    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
-    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px
+  subgraph OUT["출력"]
+    INFRA@{ icon: "fa6-solid:server", label: "대상 인프라<br/>OS, 가상화, 서버 하드웨어(BMC)" }
+  end
+
+  subgraph BASE["기반 — 폐쇄망 플랫폼 (part1)"]
+    direction LR
+    NEXUS@{ icon: "fa6-solid:box-archive", label: "Nexus<br/>파일, 아티팩트" }
+    GITLAB@{ icon: "logos:gitlab", label: "GitLab<br/>코드 저장소" }
+    JENKINS@{ icon: "logos:jenkins", label: "Jenkins<br/>실행 엔진" }
+    NETSEG@{ icon: "fa6-solid:network-wired", label: "망 3중 분리<br/>개발/운영, 서비스/OOB" }
+    HA@{ icon: "fa6-solid:shield-halved", label: "인프라 레벨 HA<br/>VMware FT, NFS" }
+  end
+
+  PORTAL -->|"HTTPS (443)"| PROC
+  PROC -->|"점검, 운영 자동화"| INFRA
+  PROC ==>|"이 기반 위에서 동작"| BASE
+
+  subgraph LEGEND["범례"]
+    direction LR
+    LG1["입력"]:::input
+    LG2["처리"]:::process
+    LG3["출력"]:::output
+    LG4["기반"]:::base
+  end
+
+  classDef input fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:1.5px
+  classDef process fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px
+  classDef output fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:1.5px
+  classDef base fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:1.5px
+
+  class PORTAL input
+  class P2,P3 process
+  class INFRA output
+  class NEXUS,GITLAB,JENKINS,NETSEG,HA base
