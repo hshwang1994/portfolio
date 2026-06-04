@@ -1,0 +1,68 @@
+---
+title: SK하이닉스 인프라 자동화 플랫폼 — 전체 시스템 아키텍처
+config:
+  theme: base
+  themeVariables:
+    fontFamily: 'Pretendard, Malgun Gothic, Noto Sans KR, sans-serif'
+    fontSize: '14px'
+    primaryTextColor: '#1E293B'
+    lineColor: '#64748B'
+    edgeLabelBackground: '#FFFFFF'
+    clusterBkg: '#F8FAFC'
+    clusterBorder: '#CBD5E1'
+  flowchart:
+    nodeSpacing: 36
+    rankSpacing: 58
+    padding: 10
+---
+flowchart LR
+  OP@{ icon: "fa6-solid:window-maximize", label: "운영자 · 사내 클라우드 포털<br/>작업 선택 + 대상 IP" }
+
+  subgraph L2["② 포털 자동화 구동 (part2)"]
+    direction TB
+    JK@{ icon: "logos:jenkins", label: "Jenkins 마스터<br/>loc로 지역 러너 라우팅" }
+    INV["동적 인벤토리<br/>포털 JSON → Ansible 대상"]:::proc
+    ANS@{ icon: "logos:ansible", label: "Ansible 러너 · 지역 A/B/C" }
+    JK --> INV --> ANS
+  end
+
+  TARGET@{ icon: "fa6-solid:server", label: "대상 인프라<br/>Day1 운영 · Day2 점검" }
+
+  subgraph L3["③ 정보 개더링 — IP 하나로 (part3)"]
+    direction TB
+    PRE["사전진단 4단계<br/>ping·port·protocol·auth"]:::gate
+    CH["3채널 점검<br/>OS · 가상화 · Redfish(BMC)"]:::proc
+    NORM["adapter 자동 선택 + Fragment 병합<br/>제조사 차이를 설정으로 흡수"]:::proc
+    PRE --> CH --> NORM
+  end
+
+  ASSET(["13필드 표준 JSON<br/>성공·실패 같은 구조 → 포털 자산 반영"]):::env
+
+  OP -->|"작업 + IP · HTTPS 443"| L2
+  L2 -->|"대상 접속 · 운영/점검"| TARGET
+  TARGET -->|"정보 수집"| L3
+  L3 -->|"표준화"| ASSET
+
+  subgraph L1["① 폐쇄망 플랫폼 기반 (part1) — 위 모든 것이 이 위에서 동작"]
+    direction LR
+    NET["망 3중 분리<br/>개발/운영 · 서비스/OOB"]:::base
+    REPO@{ icon: "fa6-solid:box-archive", label: "Nexus 파일 · GitLab 코드" }
+    HA["인프라 레벨 HA<br/>GitLab VMware FT · Jenkins NFS A-P"]:::base
+    SYNC["Webhook(HMAC) 파일 동기화<br/>지역 A/B/C 확산"]:::base
+  end
+  L2 -.->|"이 기반 위에서"| L1
+  L3 -.-> L1
+
+  subgraph LEGEND["범례"]
+    direction LR
+    LG1["입력·출력"]:::env
+    LG2["처리"]:::proc
+    LG3["점검 게이트"]:::gate
+    LG4["폐쇄망 기반"]:::base
+  end
+  L1 ~~~ LEGEND
+
+  classDef proc fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:1.5px
+  classDef gate fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:1.5px
+  classDef env fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+  classDef base fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:1.5px
