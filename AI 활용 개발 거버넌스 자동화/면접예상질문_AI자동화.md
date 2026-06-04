@@ -172,7 +172,7 @@ cycle의 적정 크기와 우선순위 기준을 잡아야 했다.
 cycle 5회까지는 발견 항목을 모두 같은 cycle에서 처리하려다가 governor 심사가 막혀 진행이 안 됐다. 그래서 cycle당 Tier 2 변경 3건 이내, Tier 3은 별도 세션으로 분리하는 규칙을 만들었다. observer가 발견한 항목을 architect가 우선순위로 정렬하고, reviewer가 한 cycle에 묶을 항목을 선별한다. 또 cycle 후반에 발견된 새 문제는 다음 cycle 입력으로 넘기고 현재 cycle을 완결시키는 흐름을 정착시켰다.
 
 **Result**
-cycle 평균 처리 시간이 초기 약 4시간에서 cycle 12부터 약 1.5시간으로 줄었고(체감 기준), 미완결 cycle 0건, FAILURE_PATTERNS 75건 모두 cycle 입력으로 흡수됐다.
+cycle 평균 처리 시간이 초기 약 4시간에서 cycle 12부터 약 1.5시간으로 줄었고(체감 기준), 미완결 cycle 0건, FAILURE_PATTERNS 75건이 여러 cycle에 걸쳐 모두 cycle 입력으로 흡수됐다.
 
 ---
 
