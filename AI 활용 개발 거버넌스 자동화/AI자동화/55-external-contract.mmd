@@ -1,0 +1,69 @@
+---
+title: 외부 시스템 연동은 추측 말고 사람에게 먼저 질문 (rule 96)
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '16px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#64748B'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    REQ(["코드 작성 · 버그 조사 요청"]):::start
+
+    JUDGE{"외부 시스템 연동 enum · 상수 · DTO 인가?"}:::gate
+    NO(["순수 내부 로직 → 바로 진행"]):::ok
+
+    AI_CLASSIFY@{ icon: "logos:claude-icon", label: "AI가 연동 시스템 추정 (코드 경로 근거)" }
+
+    subgraph EXT ["연동되는 외부 시스템 (실제 계약은 외부에 있음)"]
+        direction LR
+        JENKINS@{ icon: "logos:jenkins", label: "Jenkins — Job 실행 · target_type" }
+        VMWARE@{ icon: "logos:vmware", label: "VMware vCenter / ESXi" }
+        GITLAB@{ icon: "logos:gitlab", label: "GitLab — pipeline script · webhook" }
+        ANSIBLE@{ icon: "logos:ansible", label: "Ansible / Semaphore — playbook" }
+    end
+
+    DRIFT["실측 drift 예: CustomActionPhaseType DAY_1=[PRE_OS] ↔ Jenkins 실제 {redfish · linux · windows · esxi}"]:::stop
+
+    AI_ASK@{ icon: "logos:claude-icon", label: "AI가 WHY · WHAT · IMPACT 형식으로 외부 규격 질문" }
+    DEV@{ icon: "fa6-solid:user", label: "담당 개발자 / 사용자가 실제 계약 답변" }
+
+    GOT{"외부 계약 답을 받았나?"}:::gate
+
+    HOLD(["못 받음 → 추측 루프 금지, 보류 (2턴 이상 가설 확장 X)"]):::stop
+
+    WRITE(["받음 → enum을 실제 계약과 일치시켜 작성"]):::ok
+
+    IMPACT["enum 값 변경 시 쓰임 전수 탐색: Java · i18n key · Flyway CHECK · FTL/Vue · plugin"]:::act
+
+    RECORD["drift는 FAILURE_PATTERNS + CONVENTION_DRIFT(DRIFT-XXX) 기록 → 규칙·hook 환원 (closed-loop)"]:::act
+
+    DONE(["정확히 반영 완료"]):::ok
+
+    REQ --> JUDGE
+    JUDGE -- "아니오" --> NO
+    JUDGE -- "예" --> AI_CLASSIFY
+    AI_CLASSIFY --> EXT
+    EXT -. "내부 enum이 외부 지원 집합과 어긋나기 쉬움" .-> DRIFT
+    AI_CLASSIFY --> AI_ASK
+    AI_ASK --> DEV
+    DEV --> GOT
+    GOT -- "못 받음" --> HOLD
+    GOT -- "받음" --> WRITE
+    WRITE --> IMPACT
+    IMPACT --> DONE
+    DRIFT -. "발견 시" .-> RECORD
+    RECORD -. "규칙 96 · git hook 으로 재발 차단" .-> DONE
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

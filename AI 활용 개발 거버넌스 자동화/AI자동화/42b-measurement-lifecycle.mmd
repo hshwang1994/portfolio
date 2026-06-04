@@ -1,0 +1,36 @@
+---
+title: 현재 상태를 다시 확인할까, 그대로 쓸까
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '17px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#94A3B8'
+    tertiaryColor: '#F8FAFC'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    START(["프로젝트의 현재 상태가<br/>필요해졌다"]):::start
+    SAVED["전에 확인해 둔 정보를<br/>꺼내 본다"]:::act
+    FRESH{"그동안<br/>바뀐 게 있나?"}:::gate
+    REUSE(["그대로 사용<br/>(언제 확인한 값인지 함께 안내)"]):::ok
+    RECHECK["지금 다시 확인한다"]:::act
+    UPDATE(["새 값으로 갱신하고<br/>그대로 사용"]):::ok
+
+    START --> SAVED
+    SAVED --> FRESH
+    FRESH -- "그대로다" --> REUSE
+    FRESH -- "바뀌었다" --> RECHECK
+    RECHECK --> UPDATE
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

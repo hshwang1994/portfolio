@@ -1,0 +1,35 @@
+---
+title: 사람도 AI도 똑같은 검사를 거친다
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '17px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#94A3B8'
+    tertiaryColor: '#F8FAFC'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    DEV@{ icon: "fa6-solid:user", label: "개발자가 직접 작성" }
+    AI@{ icon: "logos:claude-icon", label: "AI가 대신 작성" }
+
+    DEV -->|코드 완성| CHECK
+    AI -->|코드 완성| CHECK
+
+    CHECK{"자동 안전 검사<br/>문제 없나?"}:::gate
+
+    CHECK -->|통과| OK(["다음 작업으로<br/>진행"]):::ok
+    CHECK -->|문제 발견| FIX["무엇이 왜 위험한지<br/>알려주고 멈춤"]:::stop
+    FIX -->|고친 뒤 다시| CHECK
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

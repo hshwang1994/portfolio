@@ -1,0 +1,40 @@
+---
+title: 사고를 규칙·hook으로 되먹이는 AI 개발 거버넌스 5층 구조
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '16px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#64748B'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    CLAUDE@{ icon: "logos:claude-icon", label: "AI가 6개 고객사 공용 코드 작성 (ClovirONE · Java · Spring)" }
+    L1["1층 · 기록 — FAILURE_PATTERNS(사례) · ADR(결정)"]:::start
+    L2["2층 · 규칙 34종 — 코딩 · 보안 · 고객사 경계 · 머지 게이트"]:::act
+    L3["3층 · 정책 12종 — protected-paths · customer-boundary"]:::act
+    L4{"4층 · git hook 29개 — pre-commit 차단 / post-merge 보고"}:::gate
+    L5["5층 · AI 자산 — skill · agent"]:::act
+    BLOCK(["위반 → 사람 수정"]):::stop
+    PASS(["통과 → 반영 + Bitbucket Pipelines CI"]):::ok
+
+    L1 -->|"교훈을 규칙으로"| L2
+    L2 -->|"기준 데이터로"| L3
+    L3 -->|"hook으로 강제"| L4
+    CLAUDE --> L4
+    L5 -.-> CLAUDE
+    L4 -- "위반" --> BLOCK
+    L4 -- "통과" --> PASS
+    BLOCK -.->|"사례 기록 (closed-loop)"| L1
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

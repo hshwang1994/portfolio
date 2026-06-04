@@ -1,0 +1,31 @@
+---
+title: 자동 수정, 어디까지 믿고 맡길까
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '17px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#94A3B8'
+    tertiaryColor: '#F8FAFC'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    START(["문제 코드 발견"]):::start
+    JUDGE{"얼마나<br/>확실한가"}:::gate
+
+    START --> JUDGE
+    JUDGE -- "100% 확실" --> AUTO["바로 자동 수정<br/>사람 확인 불필요"]:::ok
+    JUDGE -- "거의 확실" --> NOTIFY["자동 수정하고<br/>사람에게 알림"]:::act
+    JUDGE -- "애매함" --> HUMAN["손대지 않고<br/>사람이 직접 검토"]:::stop
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

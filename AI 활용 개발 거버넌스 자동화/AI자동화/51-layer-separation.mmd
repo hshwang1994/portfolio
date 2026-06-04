@@ -1,0 +1,43 @@
+---
+title: 규칙(왜) · 정책(무엇) · hook(실행) 3층 분리 — 설정만 바꿔도 검사가 동작?
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '16px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#64748B'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    CLAUDE@{ icon: "logos:claude-icon", label: "AI가 코드 생성" }
+    RULE["규칙 (왜 막는가) · .claude/rules 34개"]:::act
+    POLICY[("정책 (무엇을 막는가) · .claude/policy 12개 YAML")]:::ext
+    HOOK["실행 (실제로 막는다) · git hook 29개"]:::act
+    PRE{"커밋 전 — 기준값 · 보호 경로 위반?"}:::gate
+    BLOCK(["커밋 차단"]):::stop
+    PASS(["커밋 통과"]):::ok
+    POST["머지 후 — 위험 패턴 보고 (advisory)"]:::act
+    LOOP["사고 기록 · FAILURE_PATTERNS · ADR"]:::ext
+
+    RULE -->|"의도를 데이터로 위임"| POLICY
+    POLICY -->|"YAML 읽어 검사"| HOOK
+    CLAUDE --> PRE
+    HOOK --> PRE
+    PRE -- "위반" --> BLOCK
+    PRE -- "통과" --> PASS
+    HOOK --> POST
+    BLOCK -.-> LOOP
+    POST -.-> LOOP
+    LOOP -.->|"새 규칙 · hook으로 환원 (closed-loop)"| RULE
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

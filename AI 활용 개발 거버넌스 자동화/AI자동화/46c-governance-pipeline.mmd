@@ -1,0 +1,38 @@
+---
+title: 검사 규칙을 바꿀 때도 6단계 검토를 거친다
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '17px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#94A3B8'
+    tertiaryColor: '#F8FAFC'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    REQ(["검사 규칙 자체를 바꾸자는 제안"]):::start
+    S1["① 관찰<br/>문제와 패턴을 모은다"]:::act
+    S2["② 설계<br/>바꿀 안을 만든다"]:::act
+    S3{"③ 검토<br/>독립 검증"}:::gate
+    S4@{ icon: "fa6-solid:user", label: "④ 승인: 담당자 결정" }
+    S5["⑤ 반영"]:::ok
+    S6(["⑥ 반영 결과 재확인"]):::ok
+    REJECT(["거부 — 반영 안 함"]):::stop
+
+    REQ --> S1 --> S2 --> S3
+    S3 -- "동의" --> S4
+    S3 -- "반박" --> S2
+    S4 -- "승인" --> S5 --> S6
+    S4 -- "거부" --> REJECT
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

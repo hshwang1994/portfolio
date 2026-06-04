@@ -1,0 +1,36 @@
+---
+title: 한 번 설치하면, 저장할 때마다 자동으로 검사된다
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '17px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#94A3B8'
+    tertiaryColor: '#F8FAFC'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    INSTALL(["검사 도구 한 번 설치"]):::start
+    EMBED["저장소에 자동 검사 심기"]:::act
+    WORK@{ icon: "fa6-solid:user", label: "개발자가 저장하거나 합침" }
+    AUTO{"자동 검사 실행"}:::gate
+    PASS(["통과 → 계속"]):::ok
+    FAIL(["문제 → 멈추고 알림"]):::stop
+
+    INSTALL --> EMBED
+    EMBED -.->|"이후 매번 자동으로"| AUTO
+    WORK --> AUTO
+    AUTO -- "통과" --> PASS
+    AUTO -- "문제" --> FAIL
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

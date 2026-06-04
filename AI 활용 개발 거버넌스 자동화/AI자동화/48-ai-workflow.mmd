@@ -1,0 +1,32 @@
+---
+title: 요청을 구분해 알맞게 실행하고 결과를 보고
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '17px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#94A3B8'
+    tertiaryColor: '#F8FAFC'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    INPUT@{ icon: "fa6-solid:user", label: "사용자 요청" }
+    SESS["세션 시작<br/>프로젝트 규칙 자동 로드"]:::act
+    CLASS{"요청 종류 구분"}:::gate
+    RUN@{ icon: "logos:claude-icon", label: "AI가 알맞게 실행" }
+    CHECK["작성 중 위험 패턴 자동 점검"]:::act
+    REPORT(["결과 보고"]):::ok
+
+    INPUT --> SESS --> CLASS --> RUN --> CHECK --> REPORT
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px

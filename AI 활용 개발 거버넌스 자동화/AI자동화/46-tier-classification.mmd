@@ -1,0 +1,42 @@
+---
+title: 하네스 변경 위험도 3등급 분류 — 자동? 승인? 금지?
+config:
+  layout: elk
+  look: neo
+  theme: base
+  themeVariables:
+    fontFamily: 'Malgun Gothic, Pretendard, Noto Sans KR, sans-serif'
+    fontSize: '16px'
+    primaryColor: '#EEF2FF'
+    primaryTextColor: '#1E293B'
+    primaryBorderColor: '#6366F1'
+    lineColor: '#64748B'
+    edgeLabelBackground: '#FFFFFF'
+---
+flowchart TD
+    START@{ icon: "logos:claude-icon", label: "AI가 하네스 파일 변경 제안" }
+    Q{"무엇을 바꾸나?"}:::gate
+    T3["Tier 3 · 자동 금지<br/>권한 완화 · 경계/게이트 제거"]:::stop
+    T2["Tier 2 · 승인 필요<br/>규칙 34종 · agent · skill · policy · CLAUDE.md"]:::gate
+    T1["Tier 1 · 자동 허용<br/>docs 초안 · stale 정정 · 보고서"]:::ok
+    REVIEW["독립 검토 + governor 심사"]:::act
+    OWNER@{ icon: "fa6-solid:user", label: "담당자만 직접 승인 가능" }
+    AUTO(["자동 반영"]):::ok
+    APPLIED(["하네스에 반영 완료"]):::ok
+    REJECT(["거부 — analyst로 반환"]):::stop
+
+    START --> Q
+    Q -- "권한 완화 · 경계/게이트 제거" --> T3 --> OWNER
+    Q -- "규칙 · agent · skill · policy" --> T2 --> REVIEW
+    Q -- "docs · 보고서" --> T1 --> AUTO --> APPLIED
+    REVIEW -- "승인" --> APPLIED
+    REVIEW -- "거부" --> REJECT
+    OWNER -- "승인" --> APPLIED
+    OWNER -- "거부" --> REJECT
+
+    classDef start fill:#F1F5F9,stroke:#94A3B8,color:#1E293B,stroke-width:2px
+    classDef act   fill:#EEF2FF,stroke:#6366F1,color:#1E293B,stroke-width:2px
+    classDef ok    fill:#ECFDF5,stroke:#10B981,color:#1E293B,stroke-width:2px
+    classDef gate  fill:#FFFBEB,stroke:#F59E0B,color:#1E293B,stroke-width:2px
+    classDef stop  fill:#FFF1F2,stroke:#F43F5E,color:#1E293B,stroke-width:2px
+    classDef ext   fill:#F0F9FF,stroke:#0EA5E9,color:#1E293B,stroke-width:2px
